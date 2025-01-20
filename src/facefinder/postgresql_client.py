@@ -28,7 +28,7 @@ def check_embedding(embedding):
         # conn.execute('CREATE EXTENSION IF NOT EXISTS vector') # TODO: Check if this is necessary
         # register_vector(conn) # TODO: Also check if this is necessary
         with conn.cursor() as cursor:
-            result = conn.execute('SELECT name FROM embeddings ORDER BY embedding <-> %s::vector LIMIT 5', (embedding.tolist(),)).fetchall()
+            result = conn.execute('SELECT name, (embedding <-> %s::vector) AS euclidean_distance FROM embeddings ORDER BY euclidean_distance LIMIT 5', (embedding.tolist(),)).fetchall()
 
     return result
 
