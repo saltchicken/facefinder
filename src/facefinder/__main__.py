@@ -1,13 +1,15 @@
 import argparse
+# from deepface import DeepFace
 from .analyze import detect_face, get_embedding
-from .postgresql_client import insert_embedding, check_embedding
+from .postgresql_client import EmbeddingDatabase
 
 def main():
+    # embedding()
     parser = argparse.ArgumentParser(
         description="Detect and recognize face with deepface"
     )
 
-    parser.add_argument("-i", "--input", required=True, help="Input image")
+    parser.add_argument("input", help="Input image")
     # parser.add_argument(
     #     "-o", "--output", default="output.png", type=str, help="Output folder"
     # )
@@ -28,16 +30,16 @@ def main():
     if args.embedding:
         # TODO: Only run this if the command is valid: If nothing set for --insert then it will error but embedding will run
         embedding = get_embedding(args.input)
+        db = EmbeddingDatabase()
         if args.insert:
-            insert_embedding(args.insert, embedding)
+            db.insert_embedding(args.insert, embedding)
         elif args.check:
-            result = check_embedding(embedding)
+            result = db.check_embedding(embedding)
             print(f"Result: {result}")
         else:
             # TODO: This never gets called because --insert expects a value
             print("No action for embedding specified")
     else:
+        print("hello")
         detect_face(args.input)
-
-
 
