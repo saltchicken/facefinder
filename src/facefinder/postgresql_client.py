@@ -1,8 +1,6 @@
 import psycopg
 from dotenv import load_dotenv
-import numpy as np
 import os
-# from pgvector.psycopg import register_vector
 
 load_dotenv()
 
@@ -23,18 +21,14 @@ class EmbeddingDatabase:
             self.conn.close()
 
     def insert_embedding(self, name, embedding):
-        embedding = np.array(embedding)
-
         with self.conn.cursor() as cursor:
             cursor.execute(
                 "INSERT INTO embeddings (name, embedding) VALUES (%s, %s)",
-                (name, embedding.tolist())
+                (name, embedding) 
             )
             self.conn.commit()
 
     def check_embedding(self, embedding):
-        embedding = np.array(embedding)
-
         with self.conn.cursor() as cursor:
             result = cursor.execute(
                 """
@@ -43,7 +37,7 @@ class EmbeddingDatabase:
                 ORDER BY euclidean_distance
                 LIMIT 5
                 """,
-                (embedding.tolist(),)
+                (embedding,)
             ).fetchall()
 
         return result
