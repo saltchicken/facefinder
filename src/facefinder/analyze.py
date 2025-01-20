@@ -23,6 +23,7 @@ def detect_face(input_image):
         print(f"Error: {e}")
 
 def get_embedding(input_image):
+    # TODO: Better error checking when file does not exist
     image = cv2.imread(input_image)
 
     try:
