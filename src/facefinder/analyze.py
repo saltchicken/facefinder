@@ -33,8 +33,8 @@ def get_embedding(input_image):
         for embedding in embedding_objs:
             print(f"Facial Area: {embedding['facial_area']}")
             print(f"Face Confidence: {embedding['face_confidence']}")
-            print(f"Embedding Length: {len(embedding['embedding'])}")
-            print(f"Embedding: {embedding['embedding']}")
+            # print(f"Embedding Length: {len(embedding['embedding'])}")
+            # print(f"Embedding: {embedding['embedding']}")
 
     except Exception as e:
         #TODO: This should throw an error
