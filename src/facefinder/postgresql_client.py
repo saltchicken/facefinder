@@ -45,3 +45,15 @@ class EmbeddingDatabase:
 
         return result
 
+    def does_name_exist(self, name):
+        with self.conn.cursor() as cursor:
+            result = cursor.execute(
+                """
+                SELECT name
+                FROM embeddings
+                WHERE name = %s
+                """,
+                (name)
+            ).fetchall()
+
+        return result
