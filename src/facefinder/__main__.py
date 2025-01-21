@@ -26,16 +26,24 @@ def interactive_prompt():
 
 def build_parser():
     parser = argparse.ArgumentParser(description="Detect and recognize face with deepface")
-    parser.add_argument("-i", "--input", help="Input image")
-    parser.add_argument("--insert", default=None, help="Insert the retrieved embedding")
-    parser.add_argument("--check", action="store_true", help="Check the retrieved embedding")
+    subparsers = parser.add_subparsers(dest="command")
+
+    insert_parser = subparsers.add_parser("insert", help="Insert the retrieved embedding")
+    insert_parser.add_argument("input", help="Input image path")
+    insert_parser.add_argument("name", help="Name of person in image")
+
+    check_parser = subparsers.add_parser("match", help="Match the retrieved embedding")
+    check_parser.add_argument("input", help="Input image path")
+
     return parser
 
 def command_dispatcher(args):
-    if args.insert:
+    if args.command == "insert":
         embedding = get_embedding(args.input)
-        db.insert_embedding(args.insert, embedding)
-    elif args.check:
+        # result = db.does_name_exist(args.name)
+        # print(f"Result: {result}")
+        db.insert_embedding(args.name, embedding)
+    elif args.command == "match":
         embedding = get_embedding(args.input)
         result = db.check_embedding(embedding)
         print(f"Result: {result}")
