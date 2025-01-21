@@ -75,6 +75,7 @@ class EmbeddingDatabase:
             if current_data:
                 average_embedding, embedding_count = current_data
 
+                # TODO: This is a terrible hack. Clean up type guessing
                 # Ensure both `average_embedding` and `embedding` are lists of floats
                 try:
                     # Convert string to a list (if it's stored as a string)
