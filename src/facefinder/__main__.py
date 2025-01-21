@@ -25,20 +25,10 @@ def interactive_prompt():
     db.close()
 
 def build_parser():
-    parser = argparse.ArgumentParser(
-        description="Detect and recognize face with deepface"
-    )
-
+    parser = argparse.ArgumentParser(description="Detect and recognize face with deepface")
     parser.add_argument("-i", "--input", help="Input image")
-    # parser.add_argument(
-    #     "-o", "--output", default="output.png", type=str, help="Output folder"
-    # )
-    parser.add_argument(
-        "--insert", default=None, help="Insert the retrieved embedding"
-    )
-    parser.add_argument(
-        "--check", action="store_true", help="Check the retrieved embedding"
-    )
+    parser.add_argument("--insert", default=None, help="Insert the retrieved embedding")
+    parser.add_argument("--check", action="store_true", help="Check the retrieved embedding")
     return parser
 
 def command_dispatcher(args):
