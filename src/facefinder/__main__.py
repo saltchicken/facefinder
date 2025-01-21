@@ -40,9 +40,10 @@ def build_parser():
 def command_dispatcher(args):
     if args.command == "insert":
         embedding = get_embedding(args.input)
-        # result = db.does_name_exist(args.name)
-        # print(f"Result: {result}")
-        db.insert_embedding(args.name, embedding)
+        if db.does_name_exist(args.name):
+            db.average_embedding(args.name, embedding)
+        else:
+            db.insert_embedding(args.name, embedding)
     elif args.command == "match":
         embedding = get_embedding(args.input)
         result = db.check_embedding(embedding)
