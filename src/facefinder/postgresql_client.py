@@ -111,6 +111,17 @@ class EmbeddingDatabase:
             # Commit the transaction
             self.conn.commit()
 
+    def delete_record(name):
+        with self.conn.cursor() as cursor:
+            cursor.execute(
+                """
+                DELETE FROM embeddings
+                WHERE name = %s
+                """,
+                (name,)
+            )
+            self.conn.commit()
+
     def check_embedding(self, embedding):
         with self.conn.cursor() as cursor:
             result = cursor.execute(
