@@ -32,61 +32,62 @@ class EmbeddingDatabase:
             self.conn.commit()
 
 
-    def average_embedding(self, name, embedding):
-        import ast
-        with self.conn.cursor() as cursor:
-            # Start a transaction explicitly
-            cursor.execute("BEGIN;")
-
-            # Get the current data from the table
-            cursor.execute(
-                """
-                SELECT embedding, embedding_count
-                FROM embeddings
-                WHERE name = %s;
-                """, 
-                (name,)
-            )
-            current_data = cursor.fetchone()
-
-            if current_data:
-                average_embedding, embedding_count = current_data
-
-                # TODO: This is a terrible hack. Clean up type guessing
-                # Ensure both `average_embedding` and `embedding` are lists of floats
-                try:
-                    # Convert string to a list (if it's stored as a string)
-                    if isinstance(average_embedding, str):
-                        average_embedding = ast.literal_eval(average_embedding)
-
-                    if not isinstance(average_embedding, list):
-                        raise ValueError("average_embedding must be a list.")
-
-                    # Ensure embedding is a list of floats
-                    if not isinstance(embedding, list):
-                        embedding = [float(emb) for emb in embedding]
-
-                    # Calculate the new average and embedding count
-                    new_average_embedding = [
-                        (embedding_count * avg + emb) / (embedding_count + 1)
-                        for avg, emb in zip(average_embedding, embedding)
-                    ]
-                    new_embedding_count = embedding_count + 1
-                    # Update the table with the new values
-                    cursor.execute(
-                        """
-                        UPDATE embeddings
-                        SET embedding = %s,
-                            embedding_count = %s
-                        WHERE name = %s;
-                        """,
-                        (new_average_embedding, new_embedding_count, name)
-                    )
-                except Exception as e:
-                    print(f"Error: {e}")
-            
-            # Commit the transaction
-            self.conn.commit()
+    # NOTE: Used for continuously calculating average embedding. Keeping out of curiosity.
+    # def average_embedding(self, name, embedding):
+    #     import ast
+    #     with self.conn.cursor() as cursor:
+    #         # Start a transaction explicitly
+    #         cursor.execute("BEGIN;")
+    #
+    #         # Get the current data from the table
+    #         cursor.execute(
+    #             """
+    #             SELECT embedding, embedding_count
+    #             FROM embeddings
+    #             WHERE name = %s;
+    #             """, 
+    #             (name,)
+    #         )
+    #         current_data = cursor.fetchone()
+    #
+    #         if current_data:
+    #             average_embedding, embedding_count = current_data
+    #
+    #             # TODO: This is a terrible hack. Clean up type guessing
+    #             # Ensure both `average_embedding` and `embedding` are lists of floats
+    #             try:
+    #                 # Convert string to a list (if it's stored as a string)
+    #                 if isinstance(average_embedding, str):
+    #                     average_embedding = ast.literal_eval(average_embedding)
+    #
+    #                 if not isinstance(average_embedding, list):
+    #                     raise ValueError("average_embedding must be a list.")
+    #
+    #                 # Ensure embedding is a list of floats
+    #                 if not isinstance(embedding, list):
+    #                     embedding = [float(emb) for emb in embedding]
+    #
+    #                 # Calculate the new average and embedding count
+    #                 new_average_embedding = [
+    #                     (embedding_count * avg + emb) / (embedding_count + 1)
+    #                     for avg, emb in zip(average_embedding, embedding)
+    #                 ]
+    #                 new_embedding_count = embedding_count + 1
+    #                 # Update the table with the new values
+    #                 cursor.execute(
+    #                     """
+    #                     UPDATE embeddings
+    #                     SET embedding = %s,
+    #                         embedding_count = %s
+    #                     WHERE name = %s;
+    #                     """,
+    #                     (new_average_embedding, new_embedding_count, name)
+    #                 )
+    #             except Exception as e:
+    #                 print(f"Error: {e}")
+    #
+    #         # Commit the transaction
+    #         self.conn.commit()
 
     def delete_record(name):
         with self.conn.cursor() as cursor:
@@ -103,8 +104,8 @@ class EmbeddingDatabase:
         with self.conn.cursor() as cursor:
             result = cursor.execute(
                 """
-                SELECT name, (embedding <-> %s::vector) AS euclidean_distance
-                FROM embeddings
+                SELECT name, (averaged_embedding <-> %s::vector) AS euclidean_distance
+                FROM averaged_embeddings
                 ORDER BY euclidean_distance
                 LIMIT 5
                 """,

@@ -1,6 +1,6 @@
 import argparse
 import shlex
-from .analyze import detect_face, get_embedding
+from .analyze import detect_face, get_embedding, get_embeddings_from_folder
 from .postgresql_client import EmbeddingDatabase
 
 db = EmbeddingDatabase()
@@ -31,6 +31,7 @@ def build_parser():
     insert_parser = subparsers.add_parser("insert", help="Insert the retrieved embedding")
     insert_parser.add_argument("input", help="Input image path")
     insert_parser.add_argument("name", help="Name of person in image")
+    insert_parser.add_argument("--folder", action="store_true", help="If specified, will prompt for multiple faces to insert into database from input folder")
 
     check_parser = subparsers.add_parser("match", help="Match the retrieved embedding")
     check_parser.add_argument("input", help="Input image path")
@@ -39,13 +40,18 @@ def build_parser():
 
 def command_dispatcher(args):
     if args.command == "insert":
-        embedding = get_embedding(args.input)
-        db.insert_embedding(args.name, embedding)
-        # NOTE: The following code block automatically averages on insert.
-        # if db.does_name_exist(args.name):
-        #     db.average_embedding(args.name, embedding)
-        # else:
-        #     db.insert_embedding(args.name, embedding)
+        if args.folder:
+            embeddings = get_embeddings_from_folder(args.input)
+            for embedding in embeddings:
+                db.insert_embedding(args.name, embedding)
+        else:
+            embedding = get_embedding(args.input)
+            db.insert_embedding(args.name, embedding)
+            # NOTE: The following code block automatically averages on insert.
+            # if db.does_name_exist(args.name):
+            #     db.average_embedding(args.name, embedding)
+            # else:
+            #     db.insert_embedding(args.name, embedding)
     elif args.command == "match":
         embedding = get_embedding(args.input)
         result = db.check_embedding(embedding)

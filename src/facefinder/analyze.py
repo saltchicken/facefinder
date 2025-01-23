@@ -1,5 +1,6 @@
 from deepface import DeepFace
 import cv2
+import os
 
 def detect_face(input_image):
     image = cv2.imread(input_image)
@@ -50,5 +51,18 @@ def get_embedding(input_image):
         # TODO Throw an error here
         print("No embeddings found")
         return None
+
+def get_embeddings_from_folder(folder_path):
+    # TODO: Make sure files are only images
+    # folder_name = os.path.basename(os.path.normpath(folder_path))
+    # print(f"Running on {folder_name}")
+    files = [file for file in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, file))]
+    embeddings = []
+    for file in files:
+        print(file)
+        embeddings.append(get_embedding(os.path.join(folder_path, file)))
+    # return name, embeddings
+    return embeddings
+
 
 
