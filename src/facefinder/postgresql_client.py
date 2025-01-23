@@ -31,29 +31,6 @@ class EmbeddingDatabase:
             )
             self.conn.commit()
 
-    # def average_embedding(self, name, embedding):
-    #     with self.conn.cursor() as cursor:
-    #         result = cursor.execute(
-    #             """
-    #             SELECT embedding
-    #             FROM embeddings
-    #             WHERE name = %s
-    #             """,
-    #             (name,)
-    #     ).fetchall()
-    #
-    #     if len(result) == 0:
-    #         print("The name didn't exists. This should not happen with proper checking")
-    #     elif len(result) >= 1:
-    #         print("There shouldn't be multiple entries for the same name")
-    #     else:
-    #         previous_embedding = result[0]
-    #
-    #     new_embedding = 
-    #
-    #
-    #
-    #     self.conn.commit()
 
     def average_embedding(self, name, embedding):
         import ast
