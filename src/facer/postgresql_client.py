@@ -46,6 +46,48 @@ class EmbeddingDatabase:
             )
             self.conn.commit()
 
+
+    def delete_record(name):
+        with self.conn.cursor() as cursor:
+            cursor.execute(
+                """
+                DELETE FROM embeddings
+                WHERE name = %s
+                """,
+                (name,),
+            )
+            self.conn.commit()
+
+    def check_embedding(self, embedding):
+        with self.conn.cursor() as cursor:
+            result = cursor.execute(
+                """
+                SELECT name, (averaged_embedding <-> %s::vector) AS euclidean_distance
+                FROM averaged_embeddings
+                ORDER BY euclidean_distance
+                LIMIT 5
+                """,
+                (embedding,),
+            ).fetchall()
+
+        return result
+
+    def does_name_exist(self, name):
+        with self.conn.cursor() as cursor:
+            result = cursor.execute(
+                """
+                SELECT name
+                FROM embeddings
+                WHERE name = %s
+                """,
+                (name,),
+            ).fetchall()
+
+        if len(result) > 0:
+            return True
+        else:
+            return False
+
     # NOTE: Used for continuously calculating average embedding. Keeping out of curiosity.
     # def average_embedding(self, name, embedding):
     #     import ast
@@ -103,43 +145,3 @@ class EmbeddingDatabase:
     #         # Commit the transaction
     #         self.conn.commit()
 
-    def delete_record(name):
-        with self.conn.cursor() as cursor:
-            cursor.execute(
-                """
-                DELETE FROM embeddings
-                WHERE name = %s
-                """,
-                (name,),
-            )
-            self.conn.commit()
-
-    def check_embedding(self, embedding):
-        with self.conn.cursor() as cursor:
-            result = cursor.execute(
-                """
-                SELECT name, (averaged_embedding <-> %s::vector) AS euclidean_distance
-                FROM averaged_embeddings
-                ORDER BY euclidean_distance
-                LIMIT 5
-                """,
-                (embedding,),
-            ).fetchall()
-
-        return result
-
-    def does_name_exist(self, name):
-        with self.conn.cursor() as cursor:
-            result = cursor.execute(
-                """
-                SELECT name
-                FROM embeddings
-                WHERE name = %s
-                """,
-                (name,),
-            ).fetchall()
-
-        if len(result) > 0:
-            return True
-        else:
-            return False
