@@ -36,21 +36,21 @@ def get_embedding(input_image):
             print(f"Face Confidence: {embedding['face_confidence']}")
             # print(f"Embedding Length: {len(embedding['embedding'])}")
             # print(f"Embedding: {embedding['embedding']}")
+        if num_embeddings == 1:
+            return embedding_objs[0]['embedding']
+        elif num_embeddings > 1:
+            # TODO: Implement this or throw an error
+            print("More than one embedding retrieved. This hasn't been handled yet")
+            return None
+        else:
+            # TODO Throw an error here
+            print("No embeddings found")
+            return None
 
     except Exception as e:
         #TODO: This should throw an error
         print(f"Error: {e}")
 
-    if num_embeddings == 1:
-        return embedding_objs[0]['embedding']
-    elif num_embeddings > 1:
-        # TODO: Implement this or throw an error
-        print("More than one embedding retrieved. This hasn't been handled yet")
-        return None
-    else:
-        # TODO Throw an error here
-        print("No embeddings found")
-        return None
 
 def get_embeddings_from_folder(folder_path):
     # TODO: Make sure files are only images

@@ -1,5 +1,5 @@
 import os, sys
-from facefinder.analyze import get_embedding
+from facer.analyze import get_embedding
 from pyfzf.pyfzf import FzfPrompt
 
 fzf = FzfPrompt()

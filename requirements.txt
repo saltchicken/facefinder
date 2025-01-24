@@ -1,4 +1,5 @@
-opencv-python==4.11.0
+deepface==0.0.93
+dlib==19.24.6
+fripper @ git+https://github.com/saltchicken/fripper@e542f448cebe6f3e0a7451888d324cc0cb05d5ab
 psycopg==3.2.4
-psycopg-binary==3.2.4.86
-python-dotenv==1.0.1
+tf_keras==2.18.0
