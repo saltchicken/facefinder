@@ -1,30 +1,35 @@
 import psycopg
 from psycopg.errors import OperationalError
-from dotenv import load_dotenv
 import os
+from .postgres_env_loader import check_or_create_env
 
-load_dotenv()
 
 class EmbeddingDatabase:
     def __init__(self):
-        # Establish a persistent connection when the object is initialized
+        self.connect()
+
+    def connect(self):
+        check_or_create_env()
         self.connection_string = (
-            f"postgres://{os.getenv('USER')}@{os.getenv('HOST')}:{os.getenv('PORT')}/{os.getenv('DB_NAME')}"
+            f"postgres://{os.getenv('DB_USER')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
             f"?connect_timeout=5"
         )
-        # print(self.connection_string)
         try:
             self.conn = psycopg.connect(self.connection_string)
-            print(f"Connection established to {self.conn.dsn}")
+            print(f"Connection established")
+            self.connection_status = True
         except OperationalError as e:
             print(f"Failed to connect to database: {e}")
-
-
+            print(
+                "If you have not set a .env file, please set the following environment variables: USER, HOST, PORT, DB_NAME"
+            )
+            self.connection_status = False
 
     def close(self):
         print("Closing connection to database")
         if self.conn:
             self.conn.close()
+            self.connection_status = False
 
     def __enter__(self):
         # Allows usage in a context manager
@@ -37,10 +42,9 @@ class EmbeddingDatabase:
         with self.conn.cursor() as cursor:
             cursor.execute(
                 "INSERT INTO embeddings (name, embedding) VALUES (%s, %s)",
-                (name, embedding) 
+                (name, embedding),
             )
             self.conn.commit()
-
 
     # NOTE: Used for continuously calculating average embedding. Keeping out of curiosity.
     # def average_embedding(self, name, embedding):
@@ -55,7 +59,7 @@ class EmbeddingDatabase:
     #             SELECT embedding, embedding_count
     #             FROM embeddings
     #             WHERE name = %s;
-    #             """, 
+    #             """,
     #             (name,)
     #         )
     #         current_data = cursor.fetchone()
@@ -106,7 +110,7 @@ class EmbeddingDatabase:
                 DELETE FROM embeddings
                 WHERE name = %s
                 """,
-                (name,)
+                (name,),
             )
             self.conn.commit()
 
@@ -119,7 +123,7 @@ class EmbeddingDatabase:
                 ORDER BY euclidean_distance
                 LIMIT 5
                 """,
-                (embedding,)
+                (embedding,),
             ).fetchall()
 
         return result
@@ -132,7 +136,7 @@ class EmbeddingDatabase:
                 FROM embeddings
                 WHERE name = %s
                 """,
-                (name,)
+                (name,),
             ).fetchall()
 
         if len(result) > 0:
