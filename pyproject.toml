@@ -3,18 +3,14 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "facefinder"
+name = "facer"
 version = "0.1"
 dependencies = [
-  # "opencv-python==4.11.0",
-  # "psycopg==3.2.4",
-  # "psycopg-binary==3.2.4.86",
-  # "python-dotenv==1.0.1",
 ]
 
 [project.scripts]
-facefinder = "facefinder.__main__:main"
-facefinder_cli = "facefinder.__main__:interactive_prompt"
+facer = "facer.__main__:main"
+facer_cli = "facer.__main__:interactive_prompt"
 
 [tool.setuptools.packages.find]
 where = ["src"]
