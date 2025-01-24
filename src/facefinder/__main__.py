@@ -1,5 +1,7 @@
 import argparse
 import shlex
+from fripper.ffmpeg_cmd import grab_thumbnails
+import tempfile
 from .analyze import detect_face, get_embedding, get_embeddings_from_folder
 from .postgresql_client import EmbeddingDatabase
 
@@ -35,6 +37,7 @@ def build_parser():
 
     check_parser = subparsers.add_parser("match", help="Match the retrieved embedding")
     check_parser.add_argument("input", help="Input image path")
+    check_parser.add_argument("--video", action="store_true", help="Match the faces in a video.")
 
     return parser
 
@@ -53,9 +56,17 @@ def command_dispatcher(args):
             # else:
             #     db.insert_embedding(args.name, embedding)
     elif args.command == "match":
-        embedding = get_embedding(args.input)
-        result = db.check_embedding(embedding)
-        print(f"Result: {result}")
+        if args.video:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                image_paths = grab_thumbnails(args.input, temp_dir)
+                for image_path in image_paths:
+                    embedding = get_embedding(image_path)
+                    result = db.check_embedding(embedding)
+                    print(f"Result: {result}")
+        else:
+            embedding = get_embedding(args.input)
+            result = db.check_embedding(embedding)
+            print(f"Result: {result}")
     else:
         print("Running default detect_face")
         detect_face(args.input)
