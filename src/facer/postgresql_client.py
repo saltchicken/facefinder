@@ -1,4 +1,5 @@
 import psycopg
+from psycopg.errors import OperationalError
 from dotenv import load_dotenv
 import os
 
@@ -7,9 +8,18 @@ load_dotenv()
 class EmbeddingDatabase:
     def __init__(self):
         # Establish a persistent connection when the object is initialized
-        self.connection_string = f"postgres://{os.getenv('USER')}@{os.getenv('HOST')}:{os.getenv('PORT')}/{os.getenv('DB_NAME')}"
+        self.connection_string = (
+            f"postgres://{os.getenv('USER')}@{os.getenv('HOST')}:{os.getenv('PORT')}/{os.getenv('DB_NAME')}"
+            f"?connect_timeout=5"
+        )
         # print(self.connection_string)
-        self.conn = psycopg.connect(self.connection_string)
+        try:
+            self.conn = psycopg.connect(self.connection_string)
+            print(f"Connection established to {self.conn.dsn}")
+        except OperationalError as e:
+            print(f"Failed to connect to database: {e}")
+
+
 
     def close(self):
         print("Closing connection to database")
