@@ -1,15 +1,21 @@
 import psycopg
 from psycopg.errors import OperationalError
 import os
-from .postgres_env_loader import check_or_create_env
+from env_loader import EnvLoader
 
 
 class EmbeddingDatabase:
     def __init__(self):
+        env_loader = EnvLoader("facer", [
+                ("DB_HOST", "localhost"),
+                ("DB_PORT", "5432"),
+                ("DB_USER", "postgres"),
+                ("DB_NAME", "postgres"),
+                # ("DB_PASSWORD", "password"),
+            ])
         self.connect()
 
     def connect(self):
-        check_or_create_env()
         self.connection_string = (
             f"postgres://{os.getenv('DB_USER')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
             f"?connect_timeout=5"
