@@ -2,6 +2,8 @@ import argparse
 import shlex
 from .facer import Facer
 
+from loguru import logger
+import sys
 
 def interactive_prompt():
     parser = build_parser()
@@ -29,13 +31,19 @@ def build_parser():
     insert_parser = subparsers.add_parser("insert", help="Insert the retrieved embedding")
     insert_parser.add_argument("input", help="Input image path")
     insert_parser.add_argument("name", help="Name of person in image")
+    insert_parser.add_argument('-v', "--verbose", action='store_true', help='Display debug logs')
 
     check_parser = subparsers.add_parser("match", help="Match the retrieved embedding")
     check_parser.add_argument("input", help="Input image path")
+    check_parser.add_argument('-v', "--verbose", action='store_true', help='Display debug logs')
 
     return parser
 
 def command_dispatcher(args, facer):
+    if not args.verbose:
+        logger.remove()
+        logger.add(sys.stdout, level="INFO")
+
     if args.command == "insert":
         facer.insert(args.name, args.input)
     elif args.command == "match":

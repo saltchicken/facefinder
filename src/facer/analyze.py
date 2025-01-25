@@ -2,6 +2,7 @@ from deepface import DeepFace
 import cv2
 import os
 from collections import Counter
+from loguru import logger
 
 class EmbeddingError(Exception):
     pass
@@ -11,8 +12,8 @@ def detect_face(input_image):
 
     try:
         analysises = DeepFace.analyze(image, detector_backend="dlib", actions=['age', 'gender', 'emotion', 'race'])
-        print("Analysises: ")
-        print(analysises)
+        logger.debug("Analysises: ")
+        logger.debug(analysises)
 
         for analysis in analysises:
             face = analysis["region"]
@@ -25,7 +26,7 @@ def detect_face(input_image):
         cv2.destroyAllWindows()
 
     except Exception as e:
-        print(f"Error: {e}")
+        logger.debug(f"Error: {e}")
 
 def get_embedding(input_image):
     image = cv2.imread(input_image)
@@ -35,12 +36,12 @@ def get_embedding(input_image):
     try:
         embedding_objs = DeepFace.represent(image, detector_backend="dlib", align=True)
         num_embeddings = len(embedding_objs)
-        print(f"Found {len(embedding_objs)} faces")
+        logger.debug(f"Found {len(embedding_objs)} faces")
         for embedding in embedding_objs:
-            print(f"Facial Area: {embedding['facial_area']}")
-            print(f"Face Confidence: {embedding['face_confidence']}")
-            # print(f"Embedding Length: {len(embedding['embedding'])}")
-            # print(f"Embedding: {embedding['embedding']}")
+            logger.debug(f"Facial Area: {embedding['facial_area']}")
+            logger.debug(f"Face Confidence: {embedding['face_confidence']}")
+            # logger.debug(f"Embedding Length: {len(embedding['embedding'])}")
+            # logger.debug(f"Embedding: {embedding['embedding']}")
         if num_embeddings == 1:
             return embedding_objs[0]['embedding']
         elif num_embeddings > 1:
@@ -55,11 +56,11 @@ def get_embedding(input_image):
 def get_embeddings_from_folder(folder_path):
     # TODO: Make sure files are only images
     # folder_name = os.path.basename(os.path.normpath(folder_path))
-    # print(f"Running on {folder_name}")
+    # logger.debug(f"Running on {folder_name}")
     files = [file for file in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, file))]
     embeddings = []
     for file in files:
-        print(file)
+        logger.debug(file)
         embeddings.append(get_embedding(os.path.join(folder_path, file)))
     # return name, embeddings
     return embeddings
@@ -72,14 +73,14 @@ def match_list_of_embeddings(image_paths, db):
     #         embedding = get_embedding(image_path)
     #         results.append(db.check_embedding(embedding)[0])
     #     except Exception as e:
-    #         print(f"Embedding failed to get match. Error: {e}")
-    # print(f"Processed {len(results)} out of {len(image_paths)} images")
+    #         logger.debug(f"Embedding failed to get match. Error: {e}")
+    # logger.debug(f"Processed {len(results)} out of {len(image_paths)} images")
     # all_same = all(result[0] == results[0][0] for result in results)
     # if all_same:
     #     return results[0][0]
     # else:
-    #     print("Frames did not return same match. Return `Unknown`")
-    #     print(results)
+    #     logger.debug("Frames did not return same match. Return `Unknown`")
+    #     logger.debug(results)
     #     return "Unknown"
     tolerance = 0.85
     for image_path in image_paths:
@@ -89,14 +90,14 @@ def match_list_of_embeddings(image_paths, db):
             if checked_embedding[1] < tolerance:
                 results.append(checked_embedding[0])
             else:
-                print(f"Embedding failed confidence check of tolerance {tolerance}")
+                logger.debug(f"Embedding failed confidence check of tolerance {tolerance}")
         except Exception as e:
-            print(f"Embedding failed to get match. Error: {e}")
+            logger.debug(f"Embedding failed to get match. Error: {e}")
     num_frames = len(image_paths)
     processed_frames = len(results)
-    print(f"Processed {processed_frames} out of {num_frames} images")
+    logger.debug(f"Processed {processed_frames} out of {num_frames} images")
     if processed_frames < num_frames // 2:
-        print("Not enough processed_frames")
+        logger.debug("Not enough processed_frames")
         return "Unknown"
     counter = Counter(results)
     most_common_name, count = counter.most_common(1)[0]

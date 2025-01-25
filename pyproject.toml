@@ -10,6 +10,7 @@ dependencies = [
   "dlib==19.24.6",
   "psycopg==3.2.4",
   "tf_keras==2.18.0",
+  "loguru==0.7.3",
   "env_loader @ git+https://github.com/saltchicken/env_loader@b11e9fa88d844d891001301636faebd85e3345c5",
   "fripper @ git+https://github.com/saltchicken/fripper@e542f448cebe6f3e0a7451888d324cc0cb05d5ab"
 ]
