@@ -81,13 +81,23 @@ def match_list_of_embeddings(image_paths, db):
     #     print("Frames did not return same match. Return `Unknown`")
     #     print(results)
     #     return "Unknown"
+    tolerance = 0.85
     for image_path in image_paths:
         try:
             embedding = get_embedding(image_path)
-            results.append(db.check_embedding(embedding)[0][0])
+            checked_embedding = db.check_embedding(embedding)[0]
+            if checked_embedding[1] < tolerance:
+                results.append(checked_embedding[0])
+            else:
+                print(f"Embedding failed confidence check of tolerance {tolerance}")
         except Exception as e:
             print(f"Embedding failed to get match. Error: {e}")
-    print(f"Processed {len(results)} out of {len(image_paths)} images")
+    num_frames = len(image_paths)
+    processed_frames = len(results)
+    print(f"Processed {processed_frames} out of {num_frames} images")
+    if processed_frames < num_frames // 2:
+        print("Not enough processed_frames")
+        return "Unknown"
     counter = Counter(results)
     most_common_name, count = counter.most_common(1)[0]
     if count > len(results) // 2:
