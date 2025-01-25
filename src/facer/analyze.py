@@ -1,6 +1,7 @@
 from deepface import DeepFace
 import cv2
 import os
+from collections import Counter
 
 class EmbeddingError(Exception):
     pass
@@ -66,18 +67,32 @@ def get_embeddings_from_folder(folder_path):
 def match_list_of_embeddings(image_paths, db):
     # TODO: Return confidence as well
     results = []
+    # for image_path in image_paths:
+    #     try:
+    #         embedding = get_embedding(image_path)
+    #         results.append(db.check_embedding(embedding)[0])
+    #     except Exception as e:
+    #         print(f"Embedding failed to get match. Error: {e}")
+    # print(f"Processed {len(results)} out of {len(image_paths)} images")
+    # all_same = all(result[0] == results[0][0] for result in results)
+    # if all_same:
+    #     return results[0][0]
+    # else:
+    #     print("Frames did not return same match. Return `Unknown`")
+    #     print(results)
+    #     return "Unknown"
     for image_path in image_paths:
         try:
             embedding = get_embedding(image_path)
-            results.append(db.check_embedding(embedding)[0])
+            results.append(db.check_embedding(embedding)[0][0])
         except Exception as e:
             print(f"Embedding failed to get match. Error: {e}")
     print(f"Processed {len(results)} out of {len(image_paths)} images")
-    all_same = all(result[0] == results[0][0] for result in results)
-    if all_same:
-        return results[0][0]
+    counter = Counter(results)
+    most_common_name, count = counter.most_common(1)[0]
+    if count > len(results) // 2:
+        return most_common_name
     else:
-        print("Frames did not return same match. Return `Unknown`")
         return "Unknown"
 
 
