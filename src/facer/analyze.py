@@ -1,8 +1,9 @@
 from deepface import DeepFace
 import cv2
 import os
-from collections import Counter
 from loguru import logger
+import tempfile
+from fripper.ffmpeg_cmd import grab_thumbnails
 
 class EmbeddingError(Exception):
     pass
@@ -65,46 +66,14 @@ def get_embeddings_from_folder(folder_path):
     # return name, embeddings
     return embeddings
 
-def match_list_of_embeddings(image_paths, db):
-    # TODO: Return confidence as well
+def get_embeddings_from_video(input_file):
     results = []
-    # for image_path in image_paths:
-    #     try:
-    #         embedding = get_embedding(image_path)
-    #         results.append(db.check_embedding(embedding)[0])
-    #     except Exception as e:
-    #         logger.debug(f"Embedding failed to get match. Error: {e}")
-    # logger.debug(f"Processed {len(results)} out of {len(image_paths)} images")
-    # all_same = all(result[0] == results[0][0] for result in results)
-    # if all_same:
-    #     return results[0][0]
-    # else:
-    #     logger.debug("Frames did not return same match. Return `Unknown`")
-    #     logger.debug(results)
-    #     return "Unknown"
-    tolerance = 0.85
-    for image_path in image_paths:
-        try:
-            embedding = get_embedding(image_path)
-            checked_embedding = db.check_embedding(embedding)[0]
-            if checked_embedding[1] < tolerance:
-                results.append(checked_embedding[0])
-            else:
-                logger.debug(f"Embedding failed confidence check of tolerance {tolerance}")
-        except Exception as e:
-            logger.debug(f"Embedding failed to get match. Error: {e}")
-    num_frames = len(image_paths)
-    processed_frames = len(results)
-    logger.debug(f"Processed {processed_frames} out of {num_frames} images")
-    if processed_frames < num_frames // 2:
-        logger.debug("Not enough processed_frames")
-        return "Unknown"
-    counter = Counter(results)
-    most_common_name, count = counter.most_common(1)[0]
-    if count > len(results) // 2:
-        return most_common_name
-    else:
-        return "Unknown"
-
-
-
+    with tempfile.TemporaryDirectory() as temp_dir:
+        image_paths = grab_thumbnails(input_file, temp_dir)
+        for image_path in image_paths:
+            try:
+                embedding = get_embedding(image_path)
+                results.append(embedding)
+            except Exception as e:
+                logger.debug(f"Failed to get embedding. Error: {e}")
+        return results

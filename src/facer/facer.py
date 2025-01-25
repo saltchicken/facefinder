@@ -1,8 +1,8 @@
-from fripper.ffmpeg_cmd import grab_thumbnails
-import tempfile
-from .analyze import get_embedding, get_embeddings_from_folder, match_list_of_embeddings
+from .analyze import get_embedding, get_embeddings_from_folder, get_embeddings_from_video
 from .database import PostgresEmbeddingDatabase
 from .utils.helper import classify_path
+from loguru import logger
+from collections import Counter
 
 class Facer:
     def __init__(self):
@@ -22,10 +22,6 @@ class Facer:
                     print(f"Failed to insert image: {e}")
             case "video":
                 print("Not implemented for video")
-                # with tempfile.TemporaryDirectory() as temp_dir:
-                #     temp_dir_path = Path(temp_dir)
-                #     output_file = temp_dir_path / "image.jpg"
-                #     grab_thumbnails(input_file, output_file)
             case _:
                 print("Invalid input file")
 
@@ -36,15 +32,37 @@ class Facer:
             case "image":
                 try:
                     embedding = get_embedding(input_file)
-                    result = self.db.check_embedding(embedding)
+                    result = self.db.match_embedding(embedding)
                     print(f"Result: {result}")
                 except Exception as e:
                     print(f"Embedding failed to get match. Error: {e}")
             case "video":
-                with tempfile.TemporaryDirectory() as temp_dir:
-                    image_paths = grab_thumbnails(input_file, temp_dir)
-                    result = match_list_of_embeddings(image_paths, self.db)
-                    print(result)
+                embeddings = get_embeddings_from_video(input_file)
+                matches = []
+                for embedding in embeddings:
+                    try:
+                        matched_name = self.db.match_embedding(embedding, threshold)
+                        if matched_name:
+                            matches.append(matched_name)
+                    except Exception as e:
+                        logger.debug(f"Failed to match embedding. Error: {e}")
+                # num_frames = len(embeddings)
+                # processed_frames = len(matches)
+                # logger.debug(f"Processed {processed_frames} out of {num_frames} images")
+                # if processed_frames < num_frames // 2:
+                #     logger.debug("Not enough processed_frames")
+                #     return "Unknown"
+                if len(matches) == 0:
+                    print("Unknown")
+                    return
+
+                counter = Counter(matches)
+                print(counter)
+                most_common_name, count = counter.most_common(1)[0]
+                if count > len(matches) // 2:
+                    print(most_common_name)
+                else:
+                    print("Unknown")
             case _:
                 print("Invalid input file")
 

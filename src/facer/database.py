@@ -3,6 +3,8 @@ from psycopg.errors import OperationalError
 import os
 from env_loader import EnvLoader
 
+from loguru import logger
+
 
 class PostgresEmbeddingDatabase:
     def __init__(self):
@@ -64,19 +66,27 @@ class PostgresEmbeddingDatabase:
             )
             self.conn.commit()
 
-    def check_embedding(self, embedding):
+    def match_embedding(self, embedding, threshold=None):
         with self.conn.cursor() as cursor:
             result = cursor.execute(
                 """
                 SELECT name, (averaged_embedding <-> %s::vector) AS euclidean_distance
                 FROM averaged_embeddings
                 ORDER BY euclidean_distance
-                LIMIT 5
+                LIMIT 1
                 """,
                 (embedding,),
-            ).fetchall()
+            ).fetchall()[0]
 
-        return result
+        if threshold:
+            if result[1] <= threshold:
+                logger.debug(f"Matched embedding with name: {result[0]} with distance: {result[1]}")
+                return result[0]
+            else:
+                logger.debug(f"No embeddings matched that met the threshold of {threshold}")
+                return None
+        else:
+            return result[0]
 
     def does_name_exist(self, name):
         with self.conn.cursor() as cursor:
