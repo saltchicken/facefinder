@@ -6,6 +6,12 @@ build-backend = "setuptools.build_meta"
 name = "facer"
 version = "0.1"
 dependencies = [
+  "deepface==0.0.93",
+  "dlib==19.24.6",
+  "psycopg==3.2.4",
+  "tf_keras==2.18.0",
+  "env_loader @ git+https://github.com/saltchicken/env_loader@b11e9fa88d844d891001301636faebd85e3345c5",
+  "fripper @ git+https://github.com/saltchicken/fripper@e542f448cebe6f3e0a7451888d324cc0cb05d5ab,"
 ]
 
 [project.scripts]
