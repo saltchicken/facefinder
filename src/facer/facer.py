@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 import mimetypes
 from .analyze import get_embedding, get_embeddings_from_folder, match_list_of_embeddings
-from .postgresql_client import EmbeddingDatabase
+from .database import PostgresEmbeddingDatabase
 
 def classify_path(path):
     path = Path(path)
@@ -26,7 +26,7 @@ def classify_path(path):
 
 class Facer:
     def __init__(self):
-        self.db = EmbeddingDatabase()
+        self.db = PostgresEmbeddingDatabase()
 
     def insert(self, name, input_file):
         match classify_path(input_file):

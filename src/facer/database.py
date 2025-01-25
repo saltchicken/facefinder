@@ -4,7 +4,7 @@ import os
 from env_loader import EnvLoader
 
 
-class EmbeddingDatabase:
+class PostgresEmbeddingDatabase:
     def __init__(self):
         env_loader = EnvLoader("facer", [
                 ("DB_HOST", "localhost"),
