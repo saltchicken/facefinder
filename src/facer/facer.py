@@ -1,28 +1,8 @@
 from fripper.ffmpeg_cmd import grab_thumbnails
 import tempfile
-from pathlib import Path
-import mimetypes
 from .analyze import get_embedding, get_embeddings_from_folder, match_list_of_embeddings
 from .database import PostgresEmbeddingDatabase
-
-def classify_path(path):
-    path = Path(path)
-
-    if not path.exists():
-        return None
-
-    if path.is_dir():
-        return "folder"
-
-    mime_type, _ = mimetypes.guess_type(path)
-    if mime_type:
-        if mime_type.startswith("image/"):
-            return "image"
-        elif mime_type.startswith("video/"):
-            return "video"
-        else:
-            return None
-    return None
+from .utils.helper import classify_path
 
 class Facer:
     def __init__(self):
