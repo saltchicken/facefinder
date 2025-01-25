@@ -2,6 +2,9 @@ from deepface import DeepFace
 import cv2
 import os
 
+class EmbeddingError(Exception):
+    pass
+
 def detect_face(input_image):
     image = cv2.imread(input_image)
 
@@ -24,8 +27,9 @@ def detect_face(input_image):
         print(f"Error: {e}")
 
 def get_embedding(input_image):
-    # TODO: Better error checking when file does not exist
     image = cv2.imread(input_image)
+    if image is None:
+        raise EmbeddingError(f"Failed to read the input image: {input_image}")
 
     try:
         embedding_objs = DeepFace.represent(image, detector_backend="dlib", align=True)
@@ -39,17 +43,12 @@ def get_embedding(input_image):
         if num_embeddings == 1:
             return embedding_objs[0]['embedding']
         elif num_embeddings > 1:
-            # TODO: Implement this or throw an error
-            print("More than one embedding retrieved. This hasn't been handled yet")
-            return None
+            raise EmbeddingError(f"Multiple embeddings found in image: {input_image} - TODO: Handle this")
         else:
-            # TODO Throw an error here
-            print("No embeddings found")
-            return None
+            raise EmbeddingError(f"No Embeddings found in image: {input_image}")
 
     except Exception as e:
-        #TODO: This should throw an error
-        print(f"Error: {e}")
+        raise EmbeddingError(f"An error occurred while processing the image: {e}")
 
 
 def get_embeddings_from_folder(folder_path):

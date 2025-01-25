@@ -48,8 +48,11 @@ def command_dispatcher(args):
             for embedding in embeddings:
                 db.insert_embedding(args.name, embedding)
         else:
-            embedding = get_embedding(args.input)
-            db.insert_embedding(args.name, embedding)
+            try:
+                embedding = get_embedding(args.input)
+                db.insert_embedding(args.name, embedding)
+            except Exception as e:
+                print(f"Embedding failed to insert. Error: {e}")
             # NOTE: The following code block automatically averages on insert.
             # if db.does_name_exist(args.name):
             #     db.average_embedding(args.name, embedding)
@@ -60,13 +63,19 @@ def command_dispatcher(args):
             with tempfile.TemporaryDirectory() as temp_dir:
                 image_paths = grab_thumbnails(args.input, temp_dir)
                 for image_path in image_paths:
-                    embedding = get_embedding(image_path)
-                    result = db.check_embedding(embedding)
-                    print(f"Result: {result}")
+                    try:
+                        embedding = get_embedding(image_path)
+                        result = db.check_embedding(embedding)
+                        print(f"Result: {result}")
+                    except Exception as e:
+                        print(f"Embedding failed to get match. Error: {e}")
         else:
-            embedding = get_embedding(args.input)
-            result = db.check_embedding(embedding)
-            print(f"Result: {result}")
+            try:
+                embedding = get_embedding(args.input)
+                result = db.check_embedding(embedding)
+                print(f"Result: {result}")
+            except Exception as e:
+                print(f"Embedding failed to get a match. Error: {e}")
     else:
         print("Running default detect_face")
         detect_face(args.input)
