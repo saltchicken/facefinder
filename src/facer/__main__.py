@@ -2,7 +2,7 @@ import argparse
 import shlex
 from fripper.ffmpeg_cmd import grab_thumbnails
 import tempfile
-from .analyze import detect_face, get_embedding, get_embeddings_from_folder
+from .analyze import detect_face, get_embedding, get_embeddings_from_folder, match_list_of_embeddings
 from .postgresql_client import EmbeddingDatabase
 
 db = EmbeddingDatabase()
@@ -62,13 +62,8 @@ def command_dispatcher(args):
         if args.video:
             with tempfile.TemporaryDirectory() as temp_dir:
                 image_paths = grab_thumbnails(args.input, temp_dir)
-                for image_path in image_paths:
-                    try:
-                        embedding = get_embedding(image_path)
-                        result = db.check_embedding(embedding)
-                        print(f"Result: {result}")
-                    except Exception as e:
-                        print(f"Embedding failed to get match. Error: {e}")
+                result = match_list_of_embeddings(image_paths, db)
+                print(result)
         else:
             try:
                 embedding = get_embedding(args.input)
