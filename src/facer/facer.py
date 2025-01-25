@@ -1,8 +1,8 @@
+from collections import Counter
+from loguru import logger
 from .analyze import get_embedding, get_embeddings_from_folder, get_embeddings_from_video
 from .database import PostgresEmbeddingDatabase
 from .utils.helper import classify_path
-from loguru import logger
-from collections import Counter
 
 class Facer:
     def __init__(self):
