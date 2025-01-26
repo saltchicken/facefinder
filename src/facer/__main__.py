@@ -5,8 +5,9 @@ from .facer import Facer
 from loguru import logger
 import sys
 
+logger.remove()
+
 def setup_logger(verbose: bool):
-    logger.remove()
     logger.add(sys.stdout, level="DEBUG" if verbose else "INFO")
 
 
