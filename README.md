@@ -18,7 +18,7 @@ pip install ffmpeg
 ```
 
 [PostgreSQL](https://www.postgresql.org/)\
-[pgvector](https://github.com/pgvector/pgvector)\
+[pgvector](https://github.com/pgvector/pgvector)
 
 
 ### Installation
