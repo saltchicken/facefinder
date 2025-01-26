@@ -29,7 +29,7 @@ pip install git+https://github.com/saltchicken/facer
 ```
 or
 ```
-git clone https://github.com/yourusername/facer.git
+git clone https://github.com/saltchicken/facer.git
 cd facer
 pip install .
 
