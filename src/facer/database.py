@@ -49,8 +49,12 @@ class PostgresEmbeddingDatabase:
     def insert_embedding(self, name, embedding):
         with self.conn.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO embeddings (name, embedding) VALUES (%s, %s)",
-                (name, embedding),
+                """
+                INSERT INTO embeddings (name, embedding)
+                SELECT %s, %s
+                WHERE NOT EXISTS ( SELECT 1 FROM embeddings WHERE embedding = %s::vector );
+                """,
+                (name, embedding, embedding),
             )
             self.conn.commit()
 
