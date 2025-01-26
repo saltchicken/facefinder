@@ -1,6 +1,6 @@
 # Facer
 
-Facer is a Python-based facial recognition and analysis tool that uses deep learning to analyze images and videos, extract facial embeddings, and manage them in a PostgreSQL database. This project is ideal for building facial recognition systems for vidoos and images.
+Facer is a Python-based facial recognition and analysis tool that uses deep learning to analyze images and videos, extract facial embeddings, and manage them in a PostgreSQL database.
 
 ## Features
 
