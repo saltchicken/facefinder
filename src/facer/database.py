@@ -58,6 +58,43 @@ class PostgresEmbeddingDatabase:
             )
             self.conn.commit()
 
+    def average_embeddings(self, name):
+        with self.conn.cursor() as cursor:
+            cursor.execute(
+                    """
+                    WITH avg_embedding AS (
+                            SELECT name, AVG(embedding) AS average_embedding
+                            FROM embeddings
+                            WHERE name = %s
+                            GROUP BY name
+                        )
+                        UPDATE averaged_embeddings
+                        SET averaged_embedding = (SELECT average_embedding FROM avg_embedding)
+                        WHERE name = (SELECT name FROM avg_embedding);
+                    """,
+                    (name,),
+                )
+            cursor.execute(
+                """
+                    WITH avg_embedding AS (
+                        SELECT name, AVG(embedding) AS average_embedding
+                        FROM embeddings
+                        WHERE name = %s
+                        GROUP BY name
+                    )
+
+                    -- Insert if no rows were updated
+                    INSERT INTO averaged_embeddings (name, averaged_embedding)
+                    SELECT name, average_embedding
+                    FROM avg_embedding
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM averaged_embeddings WHERE name = (SELECT name FROM avg_embedding)
+                    );
+                """,
+                (name,),
+            )
+            self.conn.commit()
+
 
     def delete_record(name):
         with self.conn.cursor() as cursor:
