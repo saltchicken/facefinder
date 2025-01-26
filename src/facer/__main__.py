@@ -10,7 +10,6 @@ logger.remove()
 def setup_logger(verbose: bool):
     logger.add(sys.stdout, level="DEBUG" if verbose else "INFO")
 
-
 def build_parser():
     parser = argparse.ArgumentParser(description="Detect and recognize face with deepface")
     subparsers = parser.add_subparsers(dest="command")
