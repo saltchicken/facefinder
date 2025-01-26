@@ -14,10 +14,14 @@ class Facer:
                 embeddings = get_embeddings_from_folder(input_file)
                 for embedding in embeddings:
                     self.db.insert_embedding(name, embedding)
+                # TODO: Only run average on successful new insert
+                self.db.average_embeddings(name)
             case "image":
                 try:
                     embedding = get_embedding(input_file)
                     self.db.insert_embedding(name, embedding)
+                    # TODO: Only run average on successful new insert
+                    self.db.average_embeddings(name)
                 except Exception as e:
                     print(f"Failed to insert image: {e}")
             case "video":
