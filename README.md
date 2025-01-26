@@ -8,7 +8,7 @@ Please note that this project is still in development and has the potential to b
 
 - **Embedding Extraction**: Extract facial embeddings from images and videos (realtime support in development).
 - **Database Integration**: Store, retrieve, and manage facial embeddings using PostgreSQL with support for vector-based matching.
-- **Multi-File Support**: Handle individual images, folders, and video files.
+- **Multi-File Support**: Handle individual image and video files, or batches via folders. No designation required as type is classified automatically.
 - **Command-Line Interface**: Simple CLI for inserting and matching embeddings and interactive prompt for continuous exploration and analysis.
 
 ## Prerequisites
