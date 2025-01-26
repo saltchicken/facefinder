@@ -13,15 +13,28 @@ class PostgresEmbeddingDatabase:
                 ("DB_PORT", "5432"),
                 ("DB_USER", "postgres"),
                 ("DB_NAME", "postgres"),
-                # ("DB_PASSWORD", "password"),
+                ("DB_PASSWORD", ""),
             ])
         self.connect()
 
     def connect(self):
-        self.connection_string = (
-            f"postgres://{os.getenv('DB_USER')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-            f"?connect_timeout=5"
-        )
+        user = os.getenv("DB_USER")
+        password = os.getenv("DB_PASSWORD")
+        host = os.getenv("DB_HOST")
+        port = os.getenv("DB_PORT")
+        database = os.getenv("DB_NAME")
+
+        if password:
+            self.connection_string = (
+                f"postgres://{user}:{password}@{host}:{port}/{database}"
+                f"?connect_timeout=5"
+            )
+        else:
+            self.connection_string = (
+                f"postgres://{user}@{host}:{port}/{database}"
+                f"?connect_timeout=5"
+            )
+
         try:
             self.conn = psycopg.connect(self.connection_string)
             print(f"Connection established")
@@ -32,6 +45,18 @@ class PostgresEmbeddingDatabase:
                 "If you have not set a .env file, please set the following environment variables: USER, HOST, PORT, DB_NAME"
             )
             self.connection_status = False
+
+        logger.debug(f"Check for existence of required tables")
+
+        embeddings_table_exists = self.check_table_existence("embeddings", "public")
+        averaged_embeddings_table_exists = self.check_table_existence("averaged_embeddings", "public")
+
+        if embeddings_table_exists and averaged_embeddings_table_exists:
+            logger.debug("Tables exist")
+        else:
+            logger.warning("Tables do not exist. Running table initialization.")
+            self.initialize_tables()
+
 
     def close(self):
         print("Closing connection to database")
@@ -144,6 +169,65 @@ class PostgresEmbeddingDatabase:
             return True
         else:
             return False
+
+    def initialize_tables(self):
+        try:
+            with self.conn.cursor() as cursor:
+                logger.info("Initializing vector extension.")
+                cursor.execute(
+                    """
+                    CREATE EXTENSION IF NOT EXISTS vector;
+                    """
+                )
+                logger.info("Creating 'embeddings' table.")
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS embeddings (
+                        id SERIAL PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        embedding VECTOR(4096) NOT NULL
+                    )
+                    """
+                )
+                logger.info("Creating 'averaged_embeddings' table.")
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS averaged_embeddings (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    averaged_embedding VECTOR(4096) NOT NULL
+                    )
+                    """
+                )
+                self.conn.commit()
+                logger.info("Tables initialized successfully.")
+        except Exception as e:
+            self.conn.rollback()
+            logger.error(f"Error initializing tables: {e}")
+            raise
+    
+    def check_table_existence(self, table_name, schema='public'):
+        try:
+            with self.conn.cursor() as cursor:
+                exists = cursor.execute(
+                    """
+                    SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = %s and table_name = %s
+                    );
+                    """,
+                    (schema, table_name),
+                ).fetchone()[0]
+
+                if exists:
+                    return True
+                else:
+                    return False
+        except Exception as e:
+            logger.error(f"Error checking table existence: {e}")
+            return False
+
 
     # NOTE: Used for continuously calculating average embedding. Keeping out of curiosity.
     # def average_embedding(self, name, embedding):
