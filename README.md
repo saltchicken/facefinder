@@ -17,9 +17,8 @@ Command line access of ffmpeg required
 pip install ffmpeg
 ```
 
-PostgreSQL server with pgvector installed
-[PostgreSQL](https://www.postgresql.org/)
-[pgvector](https://github.com/pgvector/pgvector)
+[PostgreSQL](https://www.postgresql.org/)\
+[pgvector](https://github.com/pgvector/pgvector)\
 
 
 ### Installation
