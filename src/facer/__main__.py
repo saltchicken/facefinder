@@ -5,24 +5,10 @@ from .facer import Facer
 from loguru import logger
 import sys
 
-def interactive_prompt():
-    parser = build_parser()
-    facer = Facer()
+def setup_logger(verbose: bool):
+    logger.remove()
+    logger.add(sys.stdout, level="DEBUG" if verbose else "INFO")
 
-    while True:
-        user_input = input("Facer >>> ").strip()
-        if user_input.lower() == "exit":
-            print("Closing facer")
-            break
-        elif user_input.lower() == "help" or user_input == "--help":
-            parser.print_help()
-        else:
-            try:
-                args = parser.parse_args(shlex.split(user_input))
-            except SystemExit as e:
-                continue
-            command_dispatcher(args, facer)
-    facer.db.close()
 
 def build_parser():
     parser = argparse.ArgumentParser(description="Detect and recognize face with deepface")
@@ -40,27 +26,53 @@ def build_parser():
     return parser
 
 def command_dispatcher(args, facer):
-    if not args.verbose:
-        logger.remove()
-        logger.add(sys.stdout, level="INFO")
+    setup_logger(args.verbose)
 
-    if args.command == "insert":
-        facer.insert(args.name, args.input)
-    elif args.command == "match":
-        facer.match(args.input)
-    else:
-        print("This shouldn't happen")
-        # print("Running default detect_face")
-        # detect_face(args.input)
+    try:
+        if args.command == "insert":
+            facer.insert(args.name, args.input)
+        elif args.command == "match":
+            facer.match(args.input)
+        else:
+            logger.error(f"Unknown command: {args.command}")
+    except Exception as e:
+        logger.exception(f"Error executin command: {args.command}")
 
+def interactive_prompt(parser, facer):
+    print("Enter 'help' for available commands or 'exit' to quit.")
+
+    while True:
+        try:
+            user_input = input("Facer >>> ").strip()
+
+            if not user_input:
+                continue
+
+            if user_input.lower() == "exit":
+                print("Closing facer")
+                break
+
+            if user_input.lower() in ["help", "--help"]:
+                parser.print_help()
+                continue
+
+            try:
+                args = parser.parse_args(shlex.split(user_input))
+            except SystemExit as e:
+                continue
+            command_dispatcher(args, facer)
+        except Exception as e:
+                logger.exception("An error occurred: {}", e)
 
 def main():
     parser = build_parser()
-
-    args = parser.parse_args()
     facer = Facer()
-    command_dispatcher(args, facer)
+
+    if len(sys.argv) > 1:
+        args = parser.parse_args()
+        command_dispatcher(args, facer)
+    else:
+        interactive_prompt(parser, facer)
+
     facer.db.close()
-
-
 
