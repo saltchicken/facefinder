@@ -23,7 +23,7 @@ pip install ffmpeg
 
 Table creation is handled automatically.\
 \
-*IMPORTANT* If you are running PostgreSQL remotely there are additional server-side steps to allow the connection (outside the scope of this project)
+*IMPORTANT*: If you are running PostgreSQL remotely there are additional server-side steps to allow the connection (outside the scope of this project)
 
 ### Installation
 
