@@ -36,8 +36,8 @@ class Facer:
             case "image":
                 try:
                     embedding = get_embedding(input_file)
-                    result = self.db.match_embedding(embedding)
-                    print(f"Result: {result}")
+                    match = self.db.match_embedding(embedding)
+                    return match
                 except Exception as e:
                     print(f"Embedding failed to get match. Error: {e}")
             case "video":
@@ -57,16 +57,15 @@ class Facer:
                 #     logger.debug("Not enough processed_frames")
                 #     return "Unknown"
                 if len(matches) == 0:
-                    print("Unknown")
-                    return
+                    return "Unknown"
 
                 counter = Counter(matches)
                 print(counter)
                 most_common_name, count = counter.most_common(1)[0]
                 if count > len(matches) // 2:
-                    print(most_common_name)
+                    return most_common_name
                 else:
-                    print("Unknown")
+                    return "Unknown"
             case _:
                 print("Invalid input file")
 

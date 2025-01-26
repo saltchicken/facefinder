@@ -30,9 +30,11 @@ def command_dispatcher(args, facer):
 
     try:
         if args.command == "insert":
-            facer.insert(args.name, args.input)
+            result = facer.insert(args.name, args.input)
+            print(result)
         elif args.command == "match":
-            facer.match(args.input)
+            result = facer.match(args.input)
+            print(result)
         else:
             logger.error(f"Unknown command: {args.command}")
     except Exception as e:
