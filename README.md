@@ -35,7 +35,6 @@ or
 git clone https://github.com/saltchicken/facer.git
 cd facer
 pip install .
-
 ```
 
 ### Environment Variables
