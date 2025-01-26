@@ -2,6 +2,8 @@
 
 Facer is a Python-based facial recognition tool that uses deep learning to analyze images and videos, extract facial embeddings, and manage them in a PostgreSQL database.
 
+Please note that this project is still in development and has the potential to be far more efficient. It is still far more efficient than rudimentary practices.
+
 ## Features
 
 - **Embedding Extraction**: Extract facial embeddings from images and videos (realtime support in development).
