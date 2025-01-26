@@ -19,6 +19,8 @@ pip install ffmpeg
 [PostgreSQL](https://www.postgresql.org/)\
 [pgvector](https://github.com/pgvector/pgvector)
 
+Table creation is handled automatically.
+Please note that if you are running PostgreSQL remotely there are additional steps to allow the connection (outside the scope of this project)
 
 ### Installation
 
