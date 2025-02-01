@@ -1,0 +1,90 @@
+import cv2
+import numpy as np
+import mediapipe as mp
+
+# Initialize Mediapipe Face Mesh
+mp_face_mesh = mp.solutions.face_mesh
+face_mesh = mp_face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1, refine_landmarks=True)
+
+# Load the image
+image_path = "C:/Users/saltchicken/Desktop/test2.png"  # Replace with your image path
+image = cv2.imread(image_path)
+
+# Convert image to RGB for Mediapipe
+rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+h, w, _ = image.shape
+
+# Camera matrix (intrinsic parameters - assuming standard webcam)
+focal_length = w  # Approximate focal length = width of image
+center = (w / 2, h / 2)  # Assuming the principal point is at the center of the image
+
+camera_matrix = np.array([
+    [focal_length, 0, center[0]],
+    [0, focal_length, center[1]],
+    [0, 0, 1]
+], dtype=np.float32)
+
+# Indices of facial landmarks used for head pose estimation
+landmark_indices = [1, 199, 33, 263, 61, 291]  # Nose tip, chin, left eye, right eye, left mouth, right mouth
+
+# Corresponding 3D model points (approximate)
+model_points = np.array([
+    (0.0, 0.0, 0.0),       # Nose tip
+    (0.0, -330.0, -65.0),  # Chin
+    (-225.0, 170.0, -135.0),  # Left eye
+    (225.0, 170.0, -135.0),   # Right eye
+    (-150.0, -150.0, -125.0),  # Left mouth
+    (150.0, -150.0, -125.0)    # Right mouth
+], dtype=np.float32)
+
+def get_head_pose(image, face_landmarks):
+    """Estimate head pose using facial landmarks."""
+    h, w, _ = image.shape
+    
+    # Extract landmark points
+    image_points = np.array([
+        [face_landmarks.landmark[i].x * w, face_landmarks.landmark[i].y * h] for i in landmark_indices
+    ], dtype=np.float32)
+
+    # Solve PnP to get rotation vector
+    _, rotation_vector, _ = cv2.solvePnP(model_points, image_points, camera_matrix, None)
+    
+    return rotation_vector
+
+def get_face_direction(rotation_vector):
+    """Determine face direction based on head pose angles with lenient thresholds."""
+    angles = np.degrees(rotation_vector.flatten())
+
+    yaw = angles[1]   # Left (-) / Right (+)
+    pitch = angles[0]  # Up (-) / Down (+)
+
+    straight_threshold = 300
+    print(angles)
+
+    if -straight_threshold < yaw < straight_threshold and -straight_threshold < pitch < straight_threshold:
+        return "Looking straight"
+    elif yaw <= -straight_threshold:
+        return "Looking left"
+    elif yaw >= straight_threshold:
+        return "Looking right"
+    elif pitch <= -straight_threshold:
+        return "Looking up"
+    elif pitch >= straight_threshold:
+        return "Looking down"
+
+# Process the image and head pose
+results = face_mesh.process(rgb_image)
+
+if results.multi_face_landmarks:
+    for face_landmarks in results.multi_face_landmarks:
+        rotation_vector = get_head_pose(image, face_landmarks)
+        direction = get_face_direction(rotation_vector)
+
+        # Display the result on the image
+        cv2.putText(image, direction, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+# Show the image with face direction
+cv2.imshow("Head Pose Detection", image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+

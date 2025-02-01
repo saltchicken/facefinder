@@ -1,0 +1,73 @@
+import cv2
+import mediapipe as mp
+import numpy as np
+
+# Initialize Mediapipe Face Mesh
+mp_face_mesh = mp.solutions.face_mesh
+mp_drawing = mp.solutions.drawing_utils
+
+# Define a function to calculate the head pose
+def get_head_pose(landmarks, image):
+    # Points for nose tip and eyes
+    nose_tip = landmarks[1]  # Landmark 1 (nose tip)
+    left_eye = landmarks[33]  # Landmark 33 (left eye)
+    right_eye = landmarks[263]  # Landmark 263 (right eye)
+    
+    # Calculate the 2D coordinates of the landmarks
+    nose_tip_2d = np.array([nose_tip.x * image.shape[1], nose_tip.y * image.shape[0]])
+    left_eye_2d = np.array([left_eye.x * image.shape[1], left_eye.y * image.shape[0]])
+    right_eye_2d = np.array([right_eye.x * image.shape[1], right_eye.y * image.shape[0]])
+
+    # Calculate horizontal direction (yaw) and vertical direction (pitch)
+    yaw = np.degrees(np.arctan2(left_eye_2d[0] - right_eye_2d[0], left_eye_2d[1] - right_eye_2d[1]))
+    pitch = np.degrees(np.arctan2(nose_tip_2d[1] - image.shape[0] / 2, nose_tip_2d[0] - image.shape[1] / 2))
+
+    return yaw, pitch
+
+# Load the image
+image_path = 'c:/users/saltchicken/desktop/test.jpg'  # Change this to the path of your image
+image = cv2.imread(image_path)
+
+# Convert the image to RGB
+rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+# Initialize the Face Mesh model
+with mp_face_mesh.FaceMesh(min_detection_confidence=0.5, min_tracking_confidence=0.5) as face_mesh:
+    # Process the image to find faces
+    results = face_mesh.process(rgb_image)
+
+    # Check if faces were detected
+    if results.multi_face_landmarks:
+        for face_landmarks in results.multi_face_landmarks:
+            # Draw face landmarks on the image
+            mp_drawing.draw_landmarks(image, face_landmarks, mp_face_mesh.FACEMESH_CONTOURS)
+
+            # Extract the 3D landmarks
+            landmarks = face_landmarks.landmark
+            yaw, pitch = get_head_pose(landmarks, image)
+
+            print(f"Pitch: {pitch}")
+            print(f"Yaw: {yaw}")
+
+            # Output the face direction
+            if abs(yaw) < 15 and abs(pitch) < 15:
+                direction = "Looking straight"
+            elif yaw > 15:
+                direction = "Looking left"
+            elif yaw < -15:
+                direction = "Looking right"
+            elif pitch > 15:
+                direction = "Looking down"
+            else:
+                direction = "Looking up"
+
+            # Display the result on the image
+            cv2.putText(image, f"Direction: {direction}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+    # Show the processed image
+    cv2.imshow("Face Direction", image)
+    
+    # Wait for a key press and then close the window
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
